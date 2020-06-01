@@ -3,14 +3,14 @@
 #include <stdlib.h>
 #include <time.h>
 
-int sortCompare(const void* a, const void* b);
-int findCompare(const void* a, const void* b);
+int compare(const void* a, const void* b);
 
-int main(int argc, char* argv[]) {
-    ArrayList* list = createArrayList(4);
+int main() {
+    ArrayList* list = createArrayList(1);
     
     srand(time(NULL));
     int a=rand();
+    printf("value of added first element: %d\n", a);
     addArrayListElement(list, &a);
     int b=rand();
     addArrayListElement(list, &b);
@@ -23,8 +23,14 @@ int main(int argc, char* argv[]) {
     int f=rand();
     addArrayListElement(list, &f);
     
-    sortArrayList(list, sortCompare);
+    printf("\nUNSORTED LIST:\n\n");
+    for (int i=0; i<getArrayListSize(list); i++) {
+        printf("%d\n", *(int*)(getArrayListElement(list, i)));
+    }
     
+    sortArrayList(list, compare);
+    
+    printf("\nSORTED LIST:\n\n");
     for (int i=0; i<getArrayListSize(list); i++) {
         printf("%d\n", *(int*)(getArrayListElement(list, i)));
     }
@@ -36,7 +42,7 @@ int main(int argc, char* argv[]) {
         printf("%d\n", *(int*)(getArrayListElement(list, i)));
     }
     
-    printf("\nindex of first added element is: %d\n", (findInArrayList(list, &a, findCompare)));
+    printf("\nindex of first added element is: %d\n", (findInArrayList(list, &a, compare)));
     
     int testSet = 2;
     setArrayListElement(list, getArrayListSize(list)/2, &testSet);
@@ -50,11 +56,11 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-int sortCompare(const void* a, const void* b) {
-    return (**(int**)a - **(int**)b);
-}
-
-int findCompare(const void* a, const void* b) {
-    if (*(int*)a == *(int*)b) return 1;
+int compare(const void* a, const void* b) {
+    int first = **(int**)a;
+    int second = **(int**)b;
+    
+    if (first > second) return 1;
+    if (first < second) return -1;
     return 0;
 }

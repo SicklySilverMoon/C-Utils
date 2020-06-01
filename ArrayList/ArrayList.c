@@ -19,7 +19,7 @@ static void expandArrayList(ArrayList* list);
 * A function that creates and returns a pointer to an ArrayList for usage, returns NULL on error
 */
 ArrayList* createArrayList(int capacity) {
-    if (capacity <= 0) return NULL;
+    if (capacity < 0) return NULL;
     
     ArrayList *list = malloc(sizeof(ArrayList));
     list->size = 0;
@@ -94,6 +94,7 @@ int addArrayListElement(ArrayList* list, void* data) {
 int removeArrayListElement(ArrayList* list) {
     if (list == NULL) return -1;
     
+    if (list->size == 0) return -1;
     list->elements[--list->size] = NULL;
     return 0;
 }
@@ -102,7 +103,11 @@ int removeArrayListElement(ArrayList* list) {
 * Sorts the list via the qsort function, the passed function must cast from (void*) to (type**) before dereferencing, example compare function on ints:
 *
 *  int compare(const void* a, const void* b) {
-*      return (**(int**)a - **(int**)b);
+*      int first = **(int**)a;
+*      int second = **(int**)b;
+*      if (first > second) return 1;
+*      if (first < second) return -1;
+*      return 0;
 *  }
 *
 * Returns -1 on error;
@@ -111,29 +116,26 @@ int sortArrayList(ArrayList* list, int (*compar)(const void*, const void*)) {
     if (list == NULL) return -1;
     
     qsort(list->elements, list->size, sizeof(void*), compar);
+    return 0;
 }
 
 /**
-* Finds the given element (passed as a double void pointer) when the passed function returns non zero, the passed function must cast from (void*) to (type*) before dereferencing, example compare function on ints:
-*
-*  int compare(const void* a, const void* b) {
-*      if *((int*)a == *(int*)b) return 1;
-*      return 0;
-*  }
+* Finds the given element (passed as a void pointer) when the passed function returns zero, enabling the ability to use the same compare function for both sortArrayList and findInArrayList.
 *
 * Returns the index of the element if found, -1 if no match exists or there was an error
 */
-int findInArrayList(ArrayList* list, void* toFind, int (*compar)(const void*, const void*)) {
+int findInArrayList(ArrayList* list, const void* toFind, int (*compar)(const void*, const void*)) {
     if (list == NULL) return -1;
     
     for (int i=0; i < list->size; i++) {
-        if (compar(toFind, (list->elements[i]))) return i;
+        if (compar(&toFind, &(list->elements[i])) == 0) return i;
     }
     return -1;
 }
 
 //internal methods
 static void expandArrayList(ArrayList* list) {
-    list->capacity *= 2;
+    if (list->capacity < 1) list->capacity = 2;
+    else list->capacity *= 2;
     list->elements = realloc(list->elements, list->capacity * sizeof(void*));
 }
